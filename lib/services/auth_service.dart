@@ -173,4 +173,72 @@ class AuthService {
               .toList();
         });
   }
+
+  Future<List<UserModel>> searchUsers(String query)async{
+    try{
+      if(query.isEmpty) return [];
+      QuerySnapshot snapshot = await _firestore
+          .collection(AppConstants.usersCollection)
+          .where('name', isGreaterThanOrEqualTo: query)
+          .where('name', isGreaterThanOrEqualTo: query + '\uf8ff')
+          .get();
+
+      return snapshot.docs
+          .map((doc) => UserModel.fromDocument(doc))
+          .where((user) => user.uid != currentUserId)
+          .toList();
+    } catch (e) {
+      throw 'Error searching users: $e';
+    }
+  }
+
+  Future<void> resetPassword(String email)async{
+    try{
+      await _auth.sendPasswordResetEmail(email: email.trim());
+    } on FirebaseAuthException catch (e){
+      throw _handleAuthException(e);
+    }catch (e) {
+      throw 'Error sending reset email: $e';
+    }
+  }
+
+  Future<void> deleteAccount()async{
+    try{
+      if(currentUserId == null) throw 'No User logged in';
+
+      await _firestore
+          .collection(AppConstants.usersCollection)
+          .doc(currentUserId)
+          .delete();
+
+      await currentUser?.delete();
+    } catch (e) {
+      throw 'Error deleting account: $e';
+    }
+  }
+
+  String _handleAuthException(FirebaseAuthException e){
+    switch(e.code){
+      case 'weak-password':
+        return 'The password provided is too weak';
+      case 'email-already-in-use':
+        return 'An account already exists for this email.';
+      case 'invalid-email':
+        return 'The email address is not valid';
+      case 'user-disabled':
+        return 'This user account has been disabled';
+      case 'user-not-found':
+        return 'No user found with this email.';
+      case 'wrong-password':
+        return 'Wrong password provided,';
+      case 'too-many-requests':
+        return 'Too many attempts. Please try again later.';
+      case 'operation-not-allowed':
+        return 'This operation is not allowed';
+      case 'network-request-failed':
+        return AppConstants.networkError;
+      default:
+        return 'Authentication error: ${e.message}';
+    }
+  }
 }
