@@ -109,7 +109,7 @@ class _SplashScreenState extends State<SplashScreen>
               context,
               MaterialPageRoute(builder: (context) => LoginScreen()),
             );
-          }
+    }
   }
 
   @override
@@ -126,9 +126,77 @@ class _SplashScreenState extends State<SplashScreen>
         decoration: BoxDecoration(
           gradient: AppConstants.primaryGradient,
         ),
-        child: SafeArea(child: Center(child: Column(
-          
-        ),)),
+            child: SafeArea(child: Center(child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: ScaleTransition(
+                    scale: _scaleAnimation,
+                    child: Container(
+                      width: 120,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 20,
+                            offset: Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        Icons.chat_bubble_outline,
+                        color: AppConstants.primaryColor,
+                        size: 60,
+                      ),
+                    ),
+                  ),
+                ),
+
+                  FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: Text(
+                      AppConstants.appName,
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 8),
+
+                  FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: Text(
+                      "Connect, Chat & Call",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white.withOpacity(0.9),
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 48),
+                  FadeTransition(opacity: _fadeAnimation,
+                  child: SizedBox(
+                    width: 40,
+                    height: 40,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 3,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
