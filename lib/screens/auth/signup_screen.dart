@@ -1,3 +1,4 @@
+import 'package:chat_app_8sc/screens/auth/login_screen.dart';
 import 'package:chat_app_8sc/screens/home/home_screen.dart';
 import 'package:chat_app_8sc/services/auth_service.dart';
 import 'package:chat_app_8sc/utils/constants.dart';
@@ -18,8 +19,11 @@ class SignupScreen extends StatefulWidget {
 
 class _SignupScreenState extends State<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+
   final AuthService _authService = AuthService();
 
   bool _isLoading = false;
@@ -29,10 +33,12 @@ class _SignupScreenState extends State<SignupScreen> {
     // TODO: implement dispose
     _emailController.dispose();
     _passwordController.dispose();
+    _nameController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  Future<void> _login()async{
+  Future<void> _signUp()async{
     if(!_formKey.currentState!.validate()){
       return;
     }
@@ -42,7 +48,8 @@ class _SignupScreenState extends State<SignupScreen> {
     });
 
     try{
-      final userModel = await _authService.signIn(
+      final userModel = await _authService.signUp(
+        name: _nameController.text,
         email: _emailController.text.trim(),
         password: _passwordController.text
       );
@@ -59,7 +66,7 @@ class _SignupScreenState extends State<SignupScreen> {
         );
 
         Fluttertoast.showToast(
-          msg: AppConstants.loginSuccess,
+          msg: AppConstants.signupSuccess,
           backgroundColor: AppConstants.secondaryColor,
         );
 
@@ -84,63 +91,10 @@ class _SignupScreenState extends State<SignupScreen> {
     }
   }
 
-  void _navigateToSignUp() {
+  void _navigateToLogin() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const SignupScreen()),
-    );
-  }
-
-  void _showForgotPasswordDialog() {
-    final emailController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text("Reset Password"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Enter your email address and we\'ll send you a password reset link',
-            ),
-            SizedBox(height: 16),
-            CustomTextField(controller: emailController,
-             hintText: 'Email',
-             prefixIcon: Icons.email,
-             keyboardType: TextInputType.emailAddress,
-             )
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text("Cancel"),),
-          ElevatedButton(
-            onPressed: () async{
-              if(emailController.text.trim().isEmpty){
-                Fluttertoast.showToast(
-                  msg: "Please enter your email",
-                  backgroundColor: AppConstants.accentColor
-                );
-                return;
-              }
-              try{
-                await _authService.resetPassword(emailController.text.trim());
-                Navigator.pop(context);
-                Fluttertoast.showToast(
-                  msg: "Password reset email sent!",
-                  backgroundColor: AppConstants.secondaryColor,
-                );
-              } catch (e) {
-                Fluttertoast.showToast(
-                  msg: e.toString(),
-                  backgroundColor: AppConstants.accentColor
-                );
-              }
-            },
-             child: Text("Send"), 
-          ),
-        ],
-      ),
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
     );
   }
 
@@ -154,6 +108,7 @@ class _SignupScreenState extends State<SignupScreen> {
             child: SingleChildScrollView(
               padding: EdgeInsets.all(AppConstants.paddingLarge),
               child: Form(
+                key: _formKey,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -178,7 +133,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       ),
                     ),
                     SizedBox(height: 24),
-                    Text("Welcome Back!",
+                    Text("Create Account",
                       style: TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
@@ -187,7 +142,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                     SizedBox(height: 8),
                     Text(
-                      "Sign in to continue",
+                      "Sign up to get started",
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.white.withOpacity(0.9),
@@ -213,6 +168,14 @@ class _SignupScreenState extends State<SignupScreen> {
                       child: Column(
                         children: [
                           CustomTextField(
+                            controller: _nameController, 
+                            hintText: 'Full Name',
+                            prefixIcon: Icons.person_outline,
+                            textCapitalization: TextCapitalization.words,
+                            validator: TextFieldValidators.name,
+                          ),
+                          SizedBox(height: 16),
+                          CustomTextField(
                             controller: _emailController, 
                             hintText: 'Email',
                             prefixIcon: Icons.email_outlined,
@@ -227,18 +190,23 @@ class _SignupScreenState extends State<SignupScreen> {
                             isPassword: true,
                             validator: TextFieldValidators.password,
                             ),
-                          SizedBox(height: 8),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: CustomTextButton(
-                              text:'Forgot Password?' ,
-                              onPressed: _showForgotPasswordDialog,
+                          SizedBox(height: 16),
+                          CustomTextField(
+                            controller: _confirmPasswordController,
+                            hintText: 'Confirm Password',
+                            prefixIcon: Icons.lock_outline,
+                            isPassword: true,
+                            validator: (value) =>
+                                TextFieldValidators.confirmPassword(
+                                  value,
+                                  _passwordController.text
+                                  ),
                             ),
-                          ),
+
                           SizedBox(height: 24),
                           CustomButton(
-                            text: "Login", 
-                            onPressed: _login,
+                            text: "Sign Up", 
+                            onPressed: _signUp,
                             isLoading: _isLoading,
                           ),
                           SizedBox(height: 16),
@@ -246,18 +214,32 @@ class _SignupScreenState extends State<SignupScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                "Don\'t have an account",
+                                "Already have an account",
                                 style: TextStyle(
                                   color: AppConstants.textSecondaryColor
                                 ),
                               ),
                               CustomTextButton(
-                                text: "Sign Up", 
-                                onPressed: _navigateToSignUp,
+                                text: "Log In", 
+                                onPressed: _navigateToLogin,
                               ),
                             ],
                           ),
                         ],
+                      ),
+                    ),
+                    SizedBox(height: 24),
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppConstants.paddingMedium,
+                      ),
+                      child: Text(
+                        "By signing up, you agree to our Terms of Service and Privacy Policy",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.white.withOpacity(0.8),
+                        ),
+                        textAlign: TextAlign.center,
                       ),
                     ),
                   ],
