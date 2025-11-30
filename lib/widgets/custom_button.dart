@@ -134,7 +134,7 @@ class CusomSmallButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 40,
+      height: 50,
       child: ElevatedButton(
         onPressed: isLoading ? null: onPressed,
         child: isLoading 

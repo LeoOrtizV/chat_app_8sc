@@ -1,5 +1,6 @@
 import 'package:chat_app_8sc/models/user_model.dart';
 import 'package:chat_app_8sc/screens/auth/login_screen.dart';
+import 'package:chat_app_8sc/screens/profile/profile_screen.dart';
 import 'package:chat_app_8sc/services/auth_service.dart';
 import 'package:chat_app_8sc/utils/constants.dart';
 import 'package:chat_app_8sc/widgets/custom_text_field.dart';
@@ -290,10 +291,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   void _navigateToProfile(BuildContext context) {
-   // Navigator.push(
-     // context,
-      //MaterialPageRoute(builder: (context) => ProfileScreen()),
-    //);
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => ProfileScreen()),
+    );
   }
 
   void _showLogoutDialog(BuildContext context){
